@@ -50,7 +50,7 @@ type Data<T> = {
   message: string
   data: T
 }
-const requset = <T>(url: string, method: Method = 'get', submitData?: object) => {
+const request = <T>(url: string, method: Method = 'get', submitData?: object) => {
   return instance.request<T, Data<T>>({
     url,
     method,
@@ -61,4 +61,4 @@ const requset = <T>(url: string, method: Method = 'get', submitData?: object) =>
 // requset<User>('/user', 'get').then((res) => {
 //   res.data.mobile
 // })
-export { baseURL, instance,requset }
+export { baseURL, instance,request }

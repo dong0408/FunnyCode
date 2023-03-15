@@ -10,9 +10,19 @@
       </a>
     </div>
     <!-- 表单 -->
-    <van-form autocomplete="off">
-      <van-field type="text" placeholder="请输入手机号"></van-field>
-      <van-field type="password" placeholder="请输入密码"></van-field>
+    <van-form autocomplete="off" @submit="login">
+      <van-field
+        v-model="mobile"
+        type="text"
+        :rules="mobileRules"
+        placeholder="请输入手机号"
+      ></van-field>
+      <van-field
+        type="password"
+        v-model="password"
+        :rules="passwordRules"
+        placeholder="请输入密码"
+      ></van-field>
       <div class="cp-cell">
         <van-checkbox v-model="agree">
           <span>我已同意</span>
@@ -22,16 +32,12 @@
         </van-checkbox>
       </div>
       <div class="cp-cell">
-        <van-button block round type="primary">登 录</van-button>
+        <van-button native-type="submit" block round type="primary">登 录</van-button>
       </div>
       <div class="cp-cell">
         <a href="javascript:;">忘记密码？</a>
       </div>
     </van-form>
-    <svg aria-hidden="true">
-      <!-- 'icon-[dir]-[name]'  dir图标所在的目录 name图标的名称-->
-      <use href="#icon-home-find" />
-    </svg>
     <!-- 底部 -->
     <div class="login-other">
       <van-divider>第三方登录</van-divider>
@@ -44,10 +50,28 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { mobileRules, passwordRules } from '@/utils/rules'
+import { showToast, showSuccessToast } from 'vant'
+import { loginByPassword } from '@/services/user'
+import { useUserStore } from '@/stores'
+import { useRoute, useRouter } from 'vue-router'
 
 const agree = ref(false)
+const mobile = ref('')
+const password = ref('')
+const store = useUserStore()
+const router = useRouter()
+const route = useRoute()
 const fn = () => {
   console.log('组件')
+}
+const login = async () => {
+  if (!agree.value) return showToast('请勾选我已同意')
+  const res = await loginByPassword(mobile.value, password.value)
+  store.setUser(res.data)
+  router.replace((route.query.returnUrl as string) || '/user')
+  showSuccessToast('登录成功')
+  console.log(res)
 }
 </script>
 
