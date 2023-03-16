@@ -3,26 +3,39 @@
     <cp-nav-bar right-text="注册" @click-right="$router.push('/register')"></cp-nav-bar>
     <!-- 头部 -->
     <div class="login-head">
-      <h3>密码登录</h3>
-      <a href="javascript:;">
-        <span>短信验证码登录</span>
+      <h3>{{ isPass ? '密码登录' : '短信验证码登录' }}</h3>
+      <a href="javascript:;" @click="isPass = !isPass">
+        <span>{{ isPass ? '短信验证码登录' : '密码登录' }}</span>
         <van-icon name="arrow"></van-icon>
       </a>
     </div>
     <!-- 表单 -->
-    <van-form autocomplete="off" @submit="login">
+    <van-form autocomplete="off" @submit="login" ref="form">
       <van-field
+        name="mobile"
         v-model="mobile"
         type="text"
         :rules="mobileRules"
         placeholder="请输入手机号"
       ></van-field>
       <van-field
-        type="password"
+        v-if="isPass"
+        :type="show ? 'text' : 'password'"
         v-model="password"
         :rules="passwordRules"
         placeholder="请输入密码"
-      ></van-field>
+      >
+        <template #button>
+          <cp-icon @click="show = !show" :name="`login-eye-${show ? 'on' : 'off'}`"></cp-icon>
+        </template>
+      </van-field>
+      <van-field v-else :rules="codeRules" v-model="code" placeholder="请输入验证码">
+        <template #button>
+          <span class="btn-send" :class="{ active: time > 0 }" @click="send">{{
+            time > 0 ? `${time}s后发送验证码` : '发送验证码'
+          }}</span>
+        </template>
+      </van-field>
       <div class="cp-cell">
         <van-checkbox v-model="agree">
           <span>我已同意</span>
@@ -49,10 +62,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { mobileRules, passwordRules } from '@/utils/rules'
-import { showToast, showSuccessToast } from 'vant'
-import { loginByPassword } from '@/services/user'
+import { onUnmounted, ref } from 'vue'
+import { mobileRules, passwordRules, codeRules } from '@/utils/rules'
+import { showToast, showSuccessToast, type FormInstance } from 'vant'
+import { loginByPassword, sendMobileCode } from '@/services/user'
 import { useUserStore } from '@/stores'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -65,6 +78,7 @@ const route = useRoute()
 const fn = () => {
   console.log('组件')
 }
+const show = ref(false)
 const login = async () => {
   if (!agree.value) return showToast('请勾选我已同意')
   const res = await loginByPassword(mobile.value, password.value)
@@ -73,6 +87,28 @@ const login = async () => {
   showSuccessToast('登录成功')
   console.log(res)
 }
+
+//短信登录页面切换
+const isPass = ref(true)
+const code = ref('')
+const time = ref(0)
+const form = ref<FormInstance | null>(null)
+let timeId: number
+const send = async () => {
+  if (time.value > 0) return
+  await form.value?.validate('mobile')
+  await sendMobileCode(mobile.value, 'login')
+  showSuccessToast('发送成功')
+  time.value = 60
+  if (timeId) clearInterval(timeId)
+  timeId = setInterval(() => {
+    time.value--
+    if (time.value <= 0) clearInterval(timeId)
+  }, 1000)
+}
+onUnmounted(() => {
+  clearInterval(timeId)
+})
 </script>
 
 <style lang="scss" scoped>
