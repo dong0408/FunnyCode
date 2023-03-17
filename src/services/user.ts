@@ -7,3 +7,6 @@ export const loginByPassword = (mobile: string, password: string) =>
 export const sendMobileCode = (mobile: string, type: codeType) => {
   request('code', 'GET', { mobile, type })
 }
+
+export const loginByCode = (mobile: string, code: string) =>
+  request<User>('/login', 'POST', { mobile, code })

@@ -65,7 +65,7 @@
 import { onUnmounted, ref } from 'vue'
 import { mobileRules, passwordRules, codeRules } from '@/utils/rules'
 import { showToast, showSuccessToast, type FormInstance } from 'vant'
-import { loginByPassword, sendMobileCode } from '@/services/user'
+import { loginByCode, loginByPassword, sendMobileCode } from '@/services/user'
 import { useUserStore } from '@/stores'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -81,7 +81,9 @@ const fn = () => {
 const show = ref(false)
 const login = async () => {
   if (!agree.value) return showToast('请勾选我已同意')
-  const res = await loginByPassword(mobile.value, password.value)
+  const res = isPass.value
+    ? await loginByPassword(mobile.value, password.value)
+    : await loginByCode(mobile.value, code.value)
   store.setUser(res.data)
   router.replace((route.query.returnUrl as string) || '/user')
   showSuccessToast('登录成功')
