@@ -12,9 +12,12 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 
-defineProps<{ title?: string; rightText?: string }>()
+const props = defineProps<{ title?: string; rightText?: string; back?: () => void }>()
 const router = useRouter()
 const onClickLeft = () => {
+  console.log(props.back, '18')
+  if(props.back) return props.back()
+
   //实现返回
   if (history.state?.back) {
     router.back()

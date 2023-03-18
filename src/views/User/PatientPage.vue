@@ -1,40 +1,80 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { getPatientList } from '@/services/user'
+import type { Patient } from '@/types/user'
+import { ref, onMounted } from 'vue'
+const list = ref<Patient[]>([])
+const getList = async () => {
+  const res = await getPatientList()
+  list.value = res.data
+}
+onMounted(() => {
+  getList()
+})
+const options = [
+  { label: '男', value: 1 },
+  { label: '女', value: 0 }
+]
+const count = ref(100)
+const car = ref('马自达')
+const gender = ref(1)
+
+const show = ref(false)
+const showPopup = () => {
+  show.value = true
+}
+
+const fn = () => {
+  show.value = false
+}
+</script>
 
 <template>
   <div class="patient-page">
     <cp-nav-bar title="家庭档案"></cp-nav-bar>
     <div class="patient-list">
-      <div class="patient-item">
+      <div class="patient-item" v-for="item in list" :key="item.id">
         <div class="info">
-          <span class="name">李富贵</span>
-          <span class="id">321111********6164</span>
-          <span>男</span>
-          <span>32岁</span>
+          <span class="name">{{ item.name }}</span>
+          <span class="id">{{ item.idCard.replace(/^(.{6}).+(.{4})$/, '\$1********\$2') }}</span>
+          <span>{{ item.genderValue }}</span>
+          <span>{{ item.age }}</span>
         </div>
         <div class="icon"><cp-icon name="user-edit" /></div>
-        <div class="tag">默认</div>
+        <div class="tag" v-if="item.defaultFlag === 1">默认</div>
       </div>
-      <div class="patient-item">
-        <div class="info">
-          <span class="name">李富贵</span>
-          <span class="id">321333********6164</span>
-          <span>男</span>
-          <span>32岁</span>
-        </div>
-        <div class="icon"><cp-icon name="user-edit" /></div>
-      </div>
-      <div class="patient-add">
+
+      <div class="patient-add" v-if="list.length < 6" @click="showPopup">
         <cp-icon name="user-add" />
         <p>添加患者</p>
       </div>
       <div class="patient-tip">最多可添加 6 人</div>
     </div>
+    <!-- v-model的使用 -->
+    <!-- <com-a :model-value="count" @update:model-value="count = $event"></com-a> -->
+    <!-- <com-a v-model="count" :car="car" @update:car="car = $event"></com-a> -->
+    <!-- <com-a v-model="count" v-model:car="car"></com-a> -->
+
+    <!-- 测试cp-radio-btn组件 -->
+    <cp-radio-btn :options="options" v-model="gender"></cp-radio-btn>
+
+    <!-- 弹出层 -->
+    <van-popup v-model:show="show" @update:show="show = $event" position="right">
+      <cp-nav-bar :back="() => (show = false)" title="添加患者"></cp-nav-bar>
+    </van-popup>
   </div>
 </template>
 
 <style lang="scss" scoped>
 .patient-page {
   padding: 46px 0 80px;
+  ::v-deep() {
+    .van-popup {
+      width: 100%;
+      height: 100%;
+      padding-top: 46px;
+      box-sizing: border-box;
+    }
+  }
 }
 .patient-list {
   padding: 15px;
