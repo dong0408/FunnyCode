@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { getPatientList } from '@/services/user'
+import { addPatient, deletePatient, getPatientList, updatePatient } from '@/services/user'
 import type { Patient } from '@/types/user'
-import { ref, onMounted } from 'vue'
+import { showConfirmDialog, showSuccessToast, showToast } from 'vant'
+import { ref, onMounted, computed } from 'vue'
+import Validator from 'id-validator'
+
 const list = ref<Patient[]>([])
 const getList = async () => {
   const res = await getPatientList()
@@ -19,12 +22,73 @@ const car = ref('马自达')
 const gender = ref(1)
 
 const show = ref(false)
-const showPopup = () => {
+const showPopup = (item?: Patient) => {
+  if (item) {
+    //填充表单
+    console.log(item)
+    const { id, idCard, name, gender, defaultFlag } = item
+    patient.value = { id, idCard, name, gender, defaultFlag }
+  } else {
+    //重置表单
+    patient.value = { ...initPatient }
+  }
   show.value = true
 }
 
 const fn = () => {
   show.value = false
+}
+
+const initPatient: Patient = {
+  name: '',
+  idCard: '',
+  gender: 1,
+  defaultFlag: 0
+}
+const patient = ref<Patient>({ ...initPatient })
+
+const defaultFlag = computed({
+  get() {
+    return patient.value.defaultFlag === 1
+  },
+  set(val) {
+    patient.value.defaultFlag = val ? 1 : 0
+  }
+})
+
+//表单提交
+const submit = async () => {
+  if (!patient.value.name) {
+    return showToast('请输入名字')
+  }
+  if (!patient.value.idCard) {
+    return showToast('请输入身份证号')
+  }
+  const validate = new Validator()
+  // validate.isValid(patient.value.idCard)
+  if (!validate.isValid(patient.value.idCard)) {
+    return showToast('身份证号不正确')
+  }
+  const info = validate.getInfo(patient.value.idCard)
+  if (info.sex !== patient.value.gender) {
+    return showToast('性别与身份证不符合')
+  }
+  patient.value.id ? await updatePatient(patient.value) : await addPatient(patient.value)
+  // await addPatient(patient.value)
+  show.value = false
+  getList()
+  showSuccessToast(patient.value.id ? '编辑患者成功' : '添加患者成功')
+}
+//删除操作
+const handleDel = async () => {
+  await showConfirmDialog({
+    title: '温馨提示',
+    message: '你是否确认删除该患者信息?'
+  })
+  await deletePatient(patient.value.id as string)
+  show.value = false
+  getList()
+  showSuccessToast('删除患者成功')
 }
 </script>
 
@@ -39,11 +103,11 @@ const fn = () => {
           <span>{{ item.genderValue }}</span>
           <span>{{ item.age }}</span>
         </div>
-        <div class="icon"><cp-icon name="user-edit" /></div>
+        <div class="icon"><cp-icon name="user-edit" @click="showPopup(item)" /></div>
         <div class="tag" v-if="item.defaultFlag === 1">默认</div>
       </div>
 
-      <div class="patient-add" v-if="list.length < 6" @click="showPopup">
+      <div class="patient-add" v-if="list.length < 6" @click="showPopup()">
         <cp-icon name="user-add" />
         <p>添加患者</p>
       </div>
@@ -55,11 +119,34 @@ const fn = () => {
     <!-- <com-a v-model="count" v-model:car="car"></com-a> -->
 
     <!-- 测试cp-radio-btn组件 -->
-    <cp-radio-btn :options="options" v-model="gender"></cp-radio-btn>
+    <!-- <cp-radio-btn :options="options" v-model="gender"></cp-radio-btn> -->
 
     <!-- 弹出层 -->
     <van-popup v-model:show="show" @update:show="show = $event" position="right">
-      <cp-nav-bar :back="() => (show = false)" title="添加患者"></cp-nav-bar>
+      <cp-nav-bar
+        :back="() => (show = false)"
+        :title="patient.id ? '编辑患者' : '添加患者'"
+        right-text="保存"
+        @click-right="submit"
+      ></cp-nav-bar>
+      <van-form autocomplete="off" ref="form">
+        <van-field v-model="patient.name" label="真实姓名" placeholder="请输入真实姓名" />
+        <van-field v-model="patient.idCard" label="身份证号" placeholder="请输入身份证号" />
+        <van-field label="性别" class="pb4">
+          <!-- 单选按钮组件 -->
+          <template #input>
+            <cp-radio-btn :options="options" v-model="patient.gender"></cp-radio-btn>
+          </template>
+        </van-field>
+        <van-field label="默认就诊人">
+          <template #input>
+            <van-checkbox v-model="defaultFlag" :icon-size="18" round />
+          </template>
+        </van-field>
+      </van-form>
+      <van-action-bar v-if="patient.id">
+        <van-action-bar-button @click="handleDel">删除</van-action-bar-button>
+      </van-action-bar>
     </van-popup>
   </div>
 </template>
@@ -74,6 +161,14 @@ const fn = () => {
       padding-top: 46px;
       box-sizing: border-box;
     }
+  }
+}
+.van-action-bar {
+  padding: 0 10px;
+  margin-bottom: 10px;
+  .van-button {
+    color: var(--cp-price);
+    background-color: var(--cp-bg);
   }
 }
 .patient-list {

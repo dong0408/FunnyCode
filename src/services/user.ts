@@ -14,3 +14,17 @@ export const loginByCode = (mobile: string, code: string) =>
 export const getUserInfo = () => request<UserInfo>('patient/myUser')
 
 export const getPatientList = () => request<PatientList>('patient/mylist')
+
+//添加患者
+export const addPatient = (patient: Patient) =>
+  request<{ id: string }>('patient/add', 'POST', patient)
+
+// export const akl =(data:data)=>request<{id:string}>(''user/id','POSt'，data)
+//这个括号里的代表需要传入的参数，在之后面使用，<{id:string}>代表返回的参数，
+
+//编辑患者
+export const updatePatient = (patient: Patient) =>
+  request<{ id: string }>('patient/add', 'POST', patient)
+
+//删除患者
+export const deletePatient = (id: string) => request(`patient/del/${id}`, 'DELETE')
