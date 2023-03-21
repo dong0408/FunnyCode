@@ -28,3 +28,5 @@ export const updatePatient = (patient: Patient) =>
 
 //删除患者
 export const deletePatient = (id: string) => request(`patient/del/${id}`, 'DELETE')
+
+
