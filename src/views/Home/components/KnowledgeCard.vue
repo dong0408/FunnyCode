@@ -9,25 +9,28 @@ defineProps<{ item: Knowledge }>()
       <van-image round class="avatar" :src="item.creatorAvatar"></van-image>
       <div class="info">
         <p class="name">{{ item.creatorName }}</p>
-        <p class="dep van-ellipsis">{{item.creatorHospatalName}} {{item.creatorDep}} {{item.creatorTitles}}</p>
+        <p class="dep van-ellipsis">
+          {{ item.creatorHospatalName }} {{ item.creatorDep }} {{ item.creatorTitles }}
+        </p>
       </div>
-      <van-button class="btn" size="small" round> {{ item.likeFlag==1? '已关注':' + 关注' }}</van-button>
+      <van-button class="btn" size="small" round>
+        {{ item.likeFlag == 1 ? '已关注' : ' + 关注' }}</van-button
+      >
     </div>
     <div class="body">
-      <h3 class="title van-ellipsis">{{item.title}}</h3>
+      <h3 class="title van-ellipsis">{{ item.title }}</h3>
       <p class="tag">
-        <span v-for="(tag ,i) in item.topics" :key="i">{{ tag }}</span>
+        <span v-for="(tag, i) in item.topics" :key="i">{{ tag }}</span>
       </p>
       <p class="intro van-multi-ellipsis--l2">
-      {{ item.content }}
+        {{ item.content.replace(/<[^>]+>/g, '') }}
       </p>
       <div class="imgs">
-        <van-image v-for="(url,i) in item.coverUrl" :key="i" :src="url" />
-       
+        <van-image fit="cover" v-for="(url, i) in item.coverUrl" :key="i" :src="url" />
       </div>
       <p class="logs">
         <span>{{ item.collectionNumber }} 收藏</span>
-        <span>{{item.commentNumber}} 评论</span>
+        <span>{{ item.commentNumber }} 评论</span>
       </p>
     </div>
   </div>
