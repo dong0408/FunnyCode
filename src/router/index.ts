@@ -1,5 +1,11 @@
 import { useUserStore } from '@/stores'
 import { createRouter, createWebHistory } from 'vue-router'
+import NProgress from 'nprogress'
+import 'nprogress/nprogress.css'
+
+NProgress.configure({
+  showSpinner: false
+})
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -42,7 +48,7 @@ const router = createRouter({
 
 //访问权限控制
 router.beforeEach((to) => {
-  document.title = `FunnyCode-${to.meta.title}`
+  NProgress.start()
   // 用户仓库
   const store = useUserStore()
   // 不需要登录的页面，白名单
@@ -50,5 +56,10 @@ router.beforeEach((to) => {
   // 如果没有登录且不在白名单内，去登录
   if (!store.user?.token && !wihteList.includes(to.path)) return '/login'
   // 否则不做任何处理
+})
+router.afterEach((to) => {
+  document.title = `FunnyCode-${to.meta.title || ''}`
+
+  NProgress.done()
 })
 export default router

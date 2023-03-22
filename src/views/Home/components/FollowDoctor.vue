@@ -2,6 +2,8 @@
 import DoctorCard from './DoctorCard.vue'
 import { onMounted, onUnmounted, ref } from 'vue'
 import { useWindowSize } from '@vueuse/core'
+import type { DoctorList } from '@/types/consult'
+import { getDoctorPage } from '@/services/consult'
 // const width = ref(150)
 // const setWidth = () => (width.value = (150 / 375) * window.innerWidth)
 // onMounted(() => {
@@ -12,6 +14,14 @@ import { useWindowSize } from '@vueuse/core'
 //   window.removeEventListener('resize', setWidth)
 // })
 const { width } = useWindowSize()
+
+//获取第一页即可
+
+const list = ref<DoctorList>([])
+onMounted(async () => {
+  const res = await getDoctorPage({ current: 1, pageSize: 5 })
+  list.value = res.data.rows
+})
 </script>
 
 <template>
@@ -23,8 +33,8 @@ const { width } = useWindowSize()
     <div class="body">
       <!-- swipe 组件 -->
       <van-swipe :loop="false" :show-indicators="false" :width="(150 / 375) * width">
-        <van-swipe-item v-for="item in 5" :key="item">
-          <doctor-card></doctor-card>
+        <van-swipe-item v-for="item in list" :key="item.id">
+          <doctor-card :item="item"></doctor-card>
         </van-swipe-item>
       </van-swipe>
     </div>
