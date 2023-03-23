@@ -1,3 +1,5 @@
+import type { ConsultTime, ConsultType } from '@/enum'
+
 export type KnowledgeType = 'like' | 'recommend' | 'fatReduction' | 'food'
 
 //文章信息
@@ -105,3 +107,24 @@ export type DoctorPage = {
 //关注的类型
 
 export type FollowType = 'topic' | 'knowledge' | 'doc' | 'disease'
+
+//问诊订单
+export type Image = {
+  id: string
+  url: string
+}
+
+export type Consult = {
+  type: ConsultType
+  couponId: string
+  illnessType: 0 | 1
+  patientId: string
+  depId: string
+  illnessDesc: String
+  illnessTime: ConsultTime
+  consultFlag: 0 | 1
+  pictures: Image[]
+  id: string
+}
+//ts内置方法Partial，对象类型的属性全部转为partial
+export type PartiaConsult = Partial<Consult>
