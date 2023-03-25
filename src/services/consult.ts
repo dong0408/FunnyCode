@@ -4,7 +4,9 @@ import type {
   KnowledgeList,
   KnowledgePage,
   KnowledgeParams,
-  PageParams
+  PageParams,
+  TopDep,
+  Image
 } from '@/types/consult'
 import { request } from '@/utils/request'
 
@@ -17,3 +19,13 @@ export const getDoctorPage = (params: PageParams) =>
 
 export const followTarget = (id: string, type: FollowType = 'doc') =>
   request('like', 'POST', { id, type })
+
+//查询科室
+
+export const getAllDep = () => request<TopDep[]>('dep/all')
+
+export const uploadImage = (file: File) => {
+  const fd = new FormData()
+  fd.append('file', file)
+  return request<Image>('upload', 'POST', fd)
+}

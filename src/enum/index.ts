@@ -16,13 +16,13 @@ export {}
 // changeDirection(Direction.Left)
 
 //问诊类型
-export   enum ConsultType {
+export enum ConsultType {
   Doctor = 1,
   Fast = 2,
   Medication = 3
 }
-export   enum ConsultTime{
-  Week=1,
+export enum ConsultTime {
+  Week = 1,
   Month,
   HalfYear,
   More

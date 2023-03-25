@@ -128,3 +128,24 @@ export type Consult = {
 }
 //ts内置方法Partial，对象类型的属性全部转为partial
 export type PartiaConsult = Partial<Consult>
+
+// 二级科室
+
+export type SubDep = {
+  /** 科室ID */
+  id: string
+  /** 科室名称 */
+  name: string
+}
+
+//一级科室
+
+export type TopDep = SubDep & {
+  /** 二级科室数组 */
+  child: SubDep[]
+}
+
+export type ConsultIllness = Pick<
+  PartiaConsult,
+  'illnessDesc' | 'illnessTime' | 'consultFlag' | 'pictures'
+>

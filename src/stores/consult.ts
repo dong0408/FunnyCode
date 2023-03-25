@@ -1,5 +1,5 @@
 import type { ConsultType } from '@/enum'
-import type { PartiaConsult } from '@/types/consult'
+import type { ConsultIllness, PartiaConsult } from '@/types/consult'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 export const useConsultStore = defineStore(
@@ -21,9 +21,7 @@ export const useConsultStore = defineStore(
       consult.value.depId = id
     }
     // 5修改病情描述函数
-    const setIllness = (
-      illness: Pick<PartiaConsult, 'illnessDesc' | 'illnessTime' | 'consultFlag' | 'pictures'>
-    ) => {
+    const setIllness = ( illness: ConsultIllness ) => {
       consult.value.illnessDesc = illness.illnessDesc
       consult.value.illnessTime = illness.illnessTime
       consult.value.consultFlag = illness.consultFlag
