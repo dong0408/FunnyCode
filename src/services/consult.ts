@@ -1,3 +1,4 @@
+import type { ConsultType } from '@/enum'
 import type {
   DoctorPage,
   FollowType,
@@ -6,7 +7,10 @@ import type {
   KnowledgeParams,
   PageParams,
   TopDep,
-  Image
+  Image,
+  ConsultOrderPreParams,
+  ConsultOrderPreData,
+  PartiaConsult
 } from '@/types/consult'
 import { request } from '@/utils/request'
 
@@ -29,3 +33,20 @@ export const uploadImage = (file: File) => {
   fd.append('file', file)
   return request<Image>('upload', 'POST', fd)
 }
+
+//获取订单信息
+
+export const getConsultOrderPre = (params: ConsultOrderPreParams) =>
+  request<ConsultOrderPreData>('/patient/consult/order/pre', 'GET', params)
+
+//生成订单
+export const createConsultOrder = (data: PartiaConsult) =>
+  request<{ id: string }>('/patient/consult/order', 'POST', data)
+
+//生成支付历史
+
+export const getConsultOrderPayUrl = (data: {
+  paymentMethod: 0 | 1
+  orderId: string
+  payCallback: string
+}) => request<{payUrl:string}>('/patient/consult/pay', 'POST', data)

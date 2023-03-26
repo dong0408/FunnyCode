@@ -29,4 +29,4 @@ export const updatePatient = (patient: Patient) =>
 //删除患者
 export const deletePatient = (id: string) => request(`patient/del/${id}`, 'DELETE')
 
-
+export const getPatientDetail = (id: string) => request<Patient>(`patient/info/${id}`)

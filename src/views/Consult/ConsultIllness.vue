@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ConsultTime } from '@/enum'
 import { uploadImage } from '@/services/consult'
-import type { ConsultIllness } from '@/types/consult'
+import { useConsultStore } from '@/stores/consult'
+import type { ConsultIllness, Image } from '@/types/consult'
+import { Dialog, showConfirmDialog, showToast } from 'vant'
 import type { UploaderAfterRead, UploaderFileListItem } from 'vant/lib/uploader/types'
-import { ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 const form = ref<ConsultIllness>({
   illnessDesc: '',
@@ -22,7 +25,7 @@ const flagOptions = [
   { label: '没就诊过', value: 1 }
 ]
 
-const fileList = ref([])
+const fileList = ref<Image[]>([])
 const onAfterRead: UploaderAfterRead = (item) => {
   if (Array.isArray(item)) return
   if (!item.file) return
@@ -43,6 +46,37 @@ const onAfterRead: UploaderAfterRead = (item) => {
 const onDeleteImg = (item: UploaderFileListItem) => {
   form.value.pictures = form.value.pictures?.filter((pic) => pic.url !== item.url)
 }
+const disabled = computed(() => {
+  return !(
+    form.value.illnessDesc &&
+    form.value.illnessTime !== undefined &&
+    form.value.consultFlag !== undefined
+  )
+})
+const store = useConsultStore()
+const router = useRouter()
+const next = () => {
+  if (!form.value.illnessDesc) return showToast('请输入病情描述')
+  if (!form.value.illnessTime === undefined) return showToast('请选择病症时间')
+  if (!form.value.consultFlag === undefined) return showToast('请选择是否就诊过')
+  store.setIllness(form.value)
+  router.push('/user/patient?isChange=1')
+}
+onMounted(() => {
+  if (store.consult.illnessDesc) {
+    showConfirmDialog({
+      title: '温馨提示',
+      message: '是否恢复您之前填写的病情信息？',
+      confirmButtonColor: 'var(--cp-primary)',
+      closeOnPopstate: false
+    }).then(() => {
+      const { illnessDesc, illnessTime, consultFlag, pictures } = store.consult
+      form.value = { illnessDesc, illnessTime, consultFlag, pictures }
+      //图片回显
+      fileList.value = pictures || []
+    })
+  }
+})
 </script>
 
 <template>
@@ -85,6 +119,7 @@ const onDeleteImg = (item: UploaderFileListItem) => {
         ></van-uploader>
         <p class="tip" v-if="!fileList.length">上传内容仅医生可见,最多9张图,最大5MB</p>
       </div>
+      <van-button :class="{ disabled }" @click="next" type="primary" block round>下一步</van-button>
     </div>
   </div>
 </template>
@@ -179,6 +214,16 @@ const onDeleteImg = (item: UploaderFileListItem) => {
         color: var(--cp-text3);
       }
     }
+  }
+}
+.van-button {
+  font-size: 16px;
+  margin-bottom: 30px;
+  &.disabled {
+    opacity: 1;
+    background: #fafafa;
+    color: #d9dbde;
+    border: #fafafa;
   }
 }
 </style>
