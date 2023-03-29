@@ -7,23 +7,23 @@ import { Dialog, showConfirmDialog, showToast } from 'vant'
 import type { UploaderAfterRead, UploaderFileListItem } from 'vant/lib/uploader/types'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-
+import { timeOptions, flagOptions } from '@/services/constants'
 const form = ref<ConsultIllness>({
   illnessDesc: '',
   illnessTime: undefined,
   consultFlag: undefined,
   pictures: []
 })
-const timeOptions = [
-  { label: '一周内', value: ConsultTime.Week },
-  { label: '一月内', value: ConsultTime.Month },
-  { label: '半年内', value: ConsultTime.HalfYear },
-  { label: '大于半年', value: ConsultTime.More }
-]
-const flagOptions = [
-  { label: '就诊过', value: 0 },
-  { label: '没就诊过', value: 1 }
-]
+// const timeOptions = [
+//   { label: '一周内', value: ConsultTime.Week },
+//   { label: '一月内', value: ConsultTime.Month },
+//   { label: '半年内', value: ConsultTime.HalfYear },
+//   { label: '大于半年', value: ConsultTime.More }
+// ]
+// const flagOptions = [
+//   { label: '就诊过', value: 0 },
+//   { label: '没就诊过', value: 1 }
+// ]
 
 const fileList = ref<Image[]>([])
 const onAfterRead: UploaderAfterRead = (item) => {

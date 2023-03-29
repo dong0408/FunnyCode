@@ -9,14 +9,18 @@ import { onMounted, onUnmounted } from 'vue'
 import { baseURL } from '@/utils/request'
 import { useUserStore } from '@/stores'
 import { useRoute } from 'vue-router'
+import type { Message, TimeMessages } from '@/types/room'
+import { MsgType } from '@/enum'
+import { ref } from 'vue'
 const store = useUserStore()
 const route = useRoute()
 let socket: Socket
+const list = ref<Message[]>([])
 onUnmounted(() => {
   socket.close()
 })
 onMounted(() => {
-  io(baseURL, {
+  socket = io(baseURL, {
     auth: {
       token: `Bearer ${store.user?.token}`
     },
@@ -24,6 +28,7 @@ onMounted(() => {
       orderId: route.query.orderId
     }
   })
+  //连接成功
   socket.on('connect', () => {
     console.log('打印成功')
   })
@@ -36,6 +41,23 @@ onMounted(() => {
     // 已经断开连接
     console.log('disconnect')
   })
+  // 消息聊天记录
+  socket.on('chatMsgList', ({ data }: { data: TimeMessages }) => {
+    //  处理消息
+    const arr: Message[] = []
+    data.forEach((item) => {
+      arr.push({
+        id: item.createTime,
+        msgType: MsgType.Notify,
+        createTime: item.createTime,
+        msg: {
+          content: item.createTime
+        }
+      })
+      arr.push(...item.items)
+    })
+    list.value.unshift(...arr)
+  })
 })
 </script>
 
@@ -43,7 +65,7 @@ onMounted(() => {
   <div class="room-page">
     <cp-nav-bar title="问诊室" />
     <room-status />
-    <room-message></room-message>
+    <room-message :list="list"></room-message>
     <room-action></room-action>
   </div>
 </template>
