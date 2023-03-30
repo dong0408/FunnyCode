@@ -10,8 +10,11 @@ import { baseURL } from '@/utils/request'
 import { useUserStore } from '@/stores'
 import { useRoute } from 'vue-router'
 import type { Message, TimeMessages } from '@/types/room'
-import { MsgType } from '@/enum'
+import { MsgType, OrderType } from '@/enum'
 import { ref } from 'vue'
+import { getConsultOrderDetail } from '@/services/consult'
+import type { ConsultOrderItem, Image } from '@/types/consult'
+
 const store = useUserStore()
 const route = useRoute()
 let socket: Socket
@@ -58,15 +61,25 @@ onMounted(() => {
     })
     list.value.unshift(...arr)
   })
+  socket.on('statusChange', async () => {
+    const res = await getConsultOrderDetail(route.query.orderId as string)
+    consult.value = res.data
+  })
+})
+const consult = ref<ConsultOrderItem>()
+onMounted(async () => {
+  const res = await getConsultOrderDetail(route.query.orderId as string)
+  consult.value = res.data
+  console.log(consult.value, '730')
 })
 </script>
 
 <template>
   <div class="room-page">
     <cp-nav-bar title="问诊室" />
-    <room-status />
+    <room-status :status="consult?.status" :countdown="consult?.countdown" />
     <room-message :list="list"></room-message>
-    <room-action></room-action>
+    <room-action :disabled="consult?.status !== OrderType.ConsultChat"></room-action>
   </div>
 </template>
 

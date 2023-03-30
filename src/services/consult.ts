@@ -10,7 +10,8 @@ import type {
   Image,
   ConsultOrderPreParams,
   ConsultOrderPreData,
-  PartiaConsult
+  PartiaConsult,
+  ConsultOrderItem
 } from '@/types/consult'
 import { request } from '@/utils/request'
 
@@ -49,4 +50,8 @@ export const getConsultOrderPayUrl = (data: {
   paymentMethod: 0 | 1
   orderId: string
   payCallback: string
-}) => request<{payUrl:string}>('/patient/consult/pay', 'POST', data)
+}) => request<{ payUrl: string }>('/patient/consult/pay', 'POST', data)
+
+//订单详情
+export const getConsultOrderDetail = (orderId: string) =>
+  request<ConsultOrderItem>('/patient/consult/order/detail', 'GET', { orderId })

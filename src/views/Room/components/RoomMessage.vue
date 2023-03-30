@@ -2,8 +2,12 @@
 import { ConsultTime, MsgType } from '@/enum'
 import type { Message } from '@/types/room'
 import { timeOptions, flagOptions } from '@/services/constants'
-import type { Image } from '@/types/consult'
+import type { ConsultOrderItem, Image } from '@/types/consult'
 import { showImagePreview } from 'vant'
+import { onMounted, ref } from 'vue'
+import { getConsultOrderDetail } from '@/services/consult'
+import { useRoute } from 'vue-router'
+
 defineProps<{ list: Message[] }>()
 
 const getIllnessTimeText = (time?: ConsultTime) => {
@@ -18,6 +22,13 @@ const onPreviewImage = (pictures?: Image[]) => {
     showImagePreview(pictures.map((item) => item.url))
   }
 }
+const consult = ref<ConsultOrderItem>()
+const route = useRoute()
+onMounted(async () => {
+  const res = await getConsultOrderDetail(route.query.orderId as string)
+  consult.value = res.data
+  console.log(consult.value, '30')
+})
 </script>
 
 <template>
