@@ -5,7 +5,7 @@ import RoomMessage from './components/RoomMessage.vue'
 
 import { io } from 'socket.io-client'
 import type { Socket } from 'socket.io-client'
-import { onMounted, onUnmounted } from 'vue'
+import { nextTick, onMounted, onUnmounted } from 'vue'
 import { baseURL } from '@/utils/request'
 import { useUserStore } from '@/stores'
 import { useRoute } from 'vue-router'
@@ -64,14 +64,26 @@ onMounted(() => {
   socket.on('statusChange', async () => {
     const res = await getConsultOrderDetail(route.query.orderId as string)
     consult.value = res.data
+    //滚动到最低部,
+    // nextTick在dom渲染之后执行
+    // nextTick(()=>{ 放进括号中执行就是等回调执行完之后执行，就是等dom完成后执行})
+    await nextTick()
+    window.scrollTo(0, document.body.scrollHeight)
   })
 })
 const consult = ref<ConsultOrderItem>()
 onMounted(async () => {
   const res = await getConsultOrderDetail(route.query.orderId as string)
   consult.value = res.data
-  console.log(consult.value, '730')
 })
+const sendText = (text: string) => {
+  socket.emit('sendChatMsg', {
+    from: store.user?.id,
+    to: consult.value?.docInfo?.id,
+    msgType: MsgType.MsgText,
+    msg: { content: text }
+  })
+}
 </script>
 
 <template>
@@ -79,7 +91,11 @@ onMounted(async () => {
     <cp-nav-bar title="问诊室" />
     <room-status :status="consult?.status" :countdown="consult?.countdown" />
     <room-message :list="list"></room-message>
-    <room-action :disabled="consult?.status !== OrderType.ConsultChat"></room-action>
+    <!-- <room-action :disabled="consult?.status !== OrderType.ConsultChat"></room-action> -->
+    <room-action
+      :disabled="consult?.status == OrderType.ConsultChat"
+      @send-text="sendText"
+    ></room-action>
   </div>
 </template>
 

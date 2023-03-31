@@ -7,7 +7,8 @@ import { showImagePreview } from 'vant'
 import { onMounted, ref } from 'vue'
 import { getConsultOrderDetail } from '@/services/consult'
 import { useRoute } from 'vue-router'
-
+import { useUserStore } from '@/stores'
+import dayjs from 'dayjs'
 defineProps<{ list: Message[] }>()
 
 const getIllnessTimeText = (time?: ConsultTime) => {
@@ -27,12 +28,13 @@ const route = useRoute()
 onMounted(async () => {
   const res = await getConsultOrderDetail(route.query.orderId as string)
   consult.value = res.data
-  console.log(consult.value, '30')
 })
+const store = useUserStore()
+const formatTime = (time: string) => dayjs(time).format('HH:mm')
 </script>
 
 <template>
-  <template v-for="{ msgType, id, msg } in list" :key="id">
+  <template v-for="{ msgType, id, msg, from, createTime,fromAvatar } in list" :key="id">
     <!-- 患者卡片 -->
     <div class="msg msg-illness" v-if="msgType === MsgType.CardPat">
       <div class="patient van-hairline--bottom">
@@ -73,15 +75,15 @@ onMounted(async () => {
       </div>
     </div>
     <!-- 发送文字 -->
-    <div class="msg msg-to">
+    <div class="msg msg-to" v-if="msgType === MsgType.MsgText && from === store.user?.id">
       <div class="content">
-        <div class="time">20:12</div>
-        <div class="pao">大夫你好？</div>
+        <div class="time">{{ formatTime(createTime) }}</div>
+        <div class="pao">{{ msg.content }}</div>
       </div>
-      <van-image src="https://yjy-oss-files.oss-cn-zhangjiakou.aliyuncs.com/tuxian/popular_3.jpg" />
+      <van-image :src="store.user?.avatar" />
     </div>
     <!-- 发送图片 -->
-    <div class="msg msg-to">
+    <!-- <div class="msg msg-to">
       <div class="content">
         <div class="time">20:12</div>
         <van-image
@@ -90,17 +92,17 @@ onMounted(async () => {
         />
       </div>
       <van-image src="https://yjy-oss-files.oss-cn-zhangjiakou.aliyuncs.com/tuxian/popular_3.jpg" />
-    </div>
+    </div> -->
     <!-- 接收文字 -->
-    <div class="msg msg-from">
-      <van-image src="https://yjy-oss-files.oss-cn-zhangjiakou.aliyuncs.com/tuxian/popular_3.jpg" />
+    <div class="msg msg-from" v-if="msgType === MsgType.MsgText && from !== store.user?.id">
+      <van-image :src="fromAvatar" />
       <div class="content">
-        <div class="time">20:12</div>
-        <div class="pao">哪里不舒服</div>
+        <div class="time">{{ formatTime(createTime) }}</div>
+        <div class="pao">{{msg.content}}</div>
       </div>
     </div>
     <!-- 接收图片 -->
-    <div class="msg msg-from">
+    <!-- <div class="msg msg-from">
       <van-image src="https://yjy-oss-files.oss-cn-zhangjiakou.aliyuncs.com/tuxian/popular_3.jpg" />
       <div class="content">
         <div class="time">20:12</div>
@@ -109,9 +111,9 @@ onMounted(async () => {
           src="https://yjy-oss-files.oss-cn-zhangjiakou.aliyuncs.com/tuxian/popular_3.jpg"
         />
       </div>
-    </div>
+    </div> -->
     <!-- 处方卡片 -->
-    <div class="msg msg-recipe">
+    <!-- <div class="msg msg-recipe">
       <div class="content">
         <div class="head van-hairline--bottom">
           <div class="head-tit">
@@ -132,7 +134,7 @@ onMounted(async () => {
         </div>
         <div class="foot"><span>购买药品</span></div>
       </div>
-    </div>
+    </div> -->
   </template>
   <!-- 评价卡片，后期实现 -->
 </template>
