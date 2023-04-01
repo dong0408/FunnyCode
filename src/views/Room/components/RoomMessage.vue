@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ConsultTime, MsgType } from '@/enum'
-import type { Message } from '@/types/room'
+import { ConsultTime, MsgType, PrescriptionStatus } from '@/enum'
+import type { Message, Prescription } from '@/types/room'
 import { timeOptions, flagOptions } from '@/services/constants'
 import type { ConsultOrderItem, Image } from '@/types/consult'
-import { showImagePreview } from 'vant'
+import { ImagePreview, showImagePreview, showToast } from 'vant'
 import { onMounted, ref } from 'vue'
-import { getConsultOrderDetail } from '@/services/consult'
-import { useRoute } from 'vue-router'
+import { getConsultOrderDetail, getPrescriptionPic } from '@/services/consult'
+import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores'
 import dayjs from 'dayjs'
 defineProps<{ list: Message[] }>()
@@ -31,10 +31,38 @@ onMounted(async () => {
 })
 const store = useUserStore()
 const formatTime = (time: string) => dayjs(time).format('HH:mm')
+const loadSuccess = (notScroll?: boolean) => {
+  if (notScroll === true) return
+  window.scrollTo(0, document.body.scrollHeight)
+}
+
+const showPrescription = async (id?: string) => {
+  if (id) {
+    const res = await getPrescriptionPic(id)
+    showImagePreview([res.data.url])
+  }
+}
+
+//购买药品
+
+const router = useRouter()
+const buy = (pre?: Prescription) => {
+  console.log('sss');
+  
+  if (pre) {
+    //无效
+    if (pre.status === PrescriptionStatus.Invalid) return showToast('处方失效')
+    //未支付，没订单
+    if (pre.status === PrescriptionStatus.NotPayment && !pre.orderId)
+      return router.push('/order/pay?id=' + pre.id)
+  }
+  //未支付，有订单
+  router.push(`/order/${pre?.orderId}`)
+}
 </script>
 
 <template>
-  <template v-for="{ msgType, id, msg, from, createTime,fromAvatar } in list" :key="id">
+  <template v-for="{ msgType, id, msg, from, createTime, fromAvatar, notScroll } in list" :key="id">
     <!-- 患者卡片 -->
     <div class="msg msg-illness" v-if="msgType === MsgType.CardPat">
       <div class="patient van-hairline--bottom">
@@ -83,58 +111,58 @@ const formatTime = (time: string) => dayjs(time).format('HH:mm')
       <van-image :src="store.user?.avatar" />
     </div>
     <!-- 发送图片 -->
-    <!-- <div class="msg msg-to">
+    <div class="msg msg-to" v-if="msgType === MsgType.MsgImage && from === store.user?.id">
       <div class="content">
-        <div class="time">20:12</div>
-        <van-image
-          fit="contain"
-          src="https://yjy-oss-files.oss-cn-zhangjiakou.aliyuncs.com/tuxian/popular_3.jpg"
-        />
+        <div class="time">{{ formatTime(createTime) }}</div>
+        <van-image fit="contain" :src="msg.picture?.url" />
       </div>
-      <van-image src="https://yjy-oss-files.oss-cn-zhangjiakou.aliyuncs.com/tuxian/popular_3.jpg" />
-    </div> -->
+      <van-image :src="store.user?.avatar" @load="loadSuccess(notScroll)" />
+    </div>
     <!-- 接收文字 -->
     <div class="msg msg-from" v-if="msgType === MsgType.MsgText && from !== store.user?.id">
       <van-image :src="fromAvatar" />
       <div class="content">
         <div class="time">{{ formatTime(createTime) }}</div>
-        <div class="pao">{{msg.content}}</div>
+        <div class="pao">{{ msg.content }}</div>
       </div>
     </div>
     <!-- 接收图片 -->
-    <!-- <div class="msg msg-from">
-      <van-image src="https://yjy-oss-files.oss-cn-zhangjiakou.aliyuncs.com/tuxian/popular_3.jpg" />
+    <div class="msg msg-from" v-if="msgType !== MsgType.MsgText && from !== store.user?.id">
+      <van-image :src="fromAvatar" />
       <div class="content">
-        <div class="time">20:12</div>
-        <van-image
-          fit="contain"
-          src="https://yjy-oss-files.oss-cn-zhangjiakou.aliyuncs.com/tuxian/popular_3.jpg"
-        />
+        <div class="time">{{ formatTime(createTime) }}</div>
+        <van-image fit="contain" :src="msg.picture?.url" @load="loadSuccess(notScroll)" />
       </div>
-    </div> -->
+    </div>
     <!-- 处方卡片 -->
-    <!-- <div class="msg msg-recipe">
+    <div class="msg msg-recipe" v-if="msgType === MsgType.CardPre">
       <div class="content">
         <div class="head van-hairline--bottom">
           <div class="head-tit">
             <h3>电子处方</h3>
-            <p>原始处方 <van-icon name="arrow"></van-icon></p>
+            <p @click="showPrescription(msg.prescription?.id)">
+              原始处方 <van-icon name="arrow"></van-icon>
+            </p>
           </div>
-          <p>李富贵 男 31岁 血管性头痛</p>
-          <p>开方时间：2022-01-15 14:21:42</p>
+          <p>
+            {{ msg.prescription?.name }} {{ msg.prescription?.gender }}
+            {{ msg.prescription?.age }}岁
+            {{ msg.prescription?.diagnosis }}
+          </p>
+          <p>开方时间：{{ msg.prescription?.createTime }}</p>
         </div>
         <div class="body">
-          <div class="body-item" v-for="i in 2" :key="i">
+          <div class="body-item" v-for="med in msg.prescription?.medicines" :key="med.id">
             <div class="durg">
-              <p>优赛明 维生素E乳</p>
-              <p>口服，每次1袋，每天3次，用药3天</p>
+              <p>{{ med.name }}{{ med.specs }}</p>
+              <p>{{ med.amount }}</p>
             </div>
-            <div class="num">x1</div>
+            <div class="num">x{{ med.quantity }}</div>
           </div>
         </div>
-        <div class="foot"><span>购买药品</span></div>
+        <div class="foot"><span @click="buy(msg.prescription)">购买药品</span></div>
       </div>
-    </div> -->
+    </div>
   </template>
   <!-- 评价卡片，后期实现 -->
 </template>
