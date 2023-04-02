@@ -8,6 +8,7 @@ import { onMounted, ref } from 'vue'
 import { getConsultOrderDetail, getPrescriptionPic } from '@/services/consult'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores'
+import EvaluateCard from './EvaluateCard.vue'
 import dayjs from 'dayjs'
 defineProps<{ list: Message[] }>()
 
@@ -47,8 +48,8 @@ const showPrescription = async (id?: string) => {
 
 const router = useRouter()
 const buy = (pre?: Prescription) => {
-  console.log('sss');
-  
+  console.log('sss')
+
   if (pre) {
     //无效
     if (pre.status === PrescriptionStatus.Invalid) return showToast('处方失效')
@@ -62,7 +63,18 @@ const buy = (pre?: Prescription) => {
 </script>
 
 <template>
-  <template v-for="{ msgType, id, msg, from, createTime, fromAvatar, notScroll } in list" :key="id">
+  <template
+    v-for="{
+      msgType,
+      id,
+      msg,
+      from,
+      createTime,
+      fromAvatar,
+      notScroll
+    } in list"
+    :key="id"
+  >
     <!-- 患者卡片 -->
     <div class="msg msg-illness" v-if="msgType === MsgType.CardPat">
       <div class="patient van-hairline--bottom">
@@ -80,7 +92,9 @@ const buy = (pre?: Prescription) => {
         <van-col span="6">病情描述</van-col>
         <van-col span="18">{{ msg.consultRecord?.illnessDesc }}</van-col>
         <van-col span="6">图片</van-col>
-        <van-col span="18" @click="onPreviewImage(msg.consultRecord?.pictures)">点击查看</van-col>
+        <van-col span="18" @click="onPreviewImage(msg.consultRecord?.pictures)"
+          >点击查看</van-col
+        >
       </van-row>
     </div>
     <!-- 通知-通用 -->
@@ -103,7 +117,10 @@ const buy = (pre?: Prescription) => {
       </div>
     </div>
     <!-- 发送文字 -->
-    <div class="msg msg-to" v-if="msgType === MsgType.MsgText && from === store.user?.id">
+    <div
+      class="msg msg-to"
+      v-if="msgType === MsgType.MsgText && from === store.user?.id"
+    >
       <div class="content">
         <div class="time">{{ formatTime(createTime) }}</div>
         <div class="pao">{{ msg.content }}</div>
@@ -111,7 +128,10 @@ const buy = (pre?: Prescription) => {
       <van-image :src="store.user?.avatar" />
     </div>
     <!-- 发送图片 -->
-    <div class="msg msg-to" v-if="msgType === MsgType.MsgImage && from === store.user?.id">
+    <div
+      class="msg msg-to"
+      v-if="msgType === MsgType.MsgImage && from === store.user?.id"
+    >
       <div class="content">
         <div class="time">{{ formatTime(createTime) }}</div>
         <van-image fit="contain" :src="msg.picture?.url" />
@@ -119,7 +139,10 @@ const buy = (pre?: Prescription) => {
       <van-image :src="store.user?.avatar" @load="loadSuccess(notScroll)" />
     </div>
     <!-- 接收文字 -->
-    <div class="msg msg-from" v-if="msgType === MsgType.MsgText && from !== store.user?.id">
+    <div
+      class="msg msg-from"
+      v-if="msgType === MsgType.MsgText && from !== store.user?.id"
+    >
       <van-image :src="fromAvatar" />
       <div class="content">
         <div class="time">{{ formatTime(createTime) }}</div>
@@ -127,11 +150,18 @@ const buy = (pre?: Prescription) => {
       </div>
     </div>
     <!-- 接收图片 -->
-    <div class="msg msg-from" v-if="msgType !== MsgType.MsgText && from !== store.user?.id">
+    <div
+      class="msg msg-from"
+      v-if="msgType !== MsgType.MsgText && from !== store.user?.id"
+    >
       <van-image :src="fromAvatar" />
       <div class="content">
         <div class="time">{{ formatTime(createTime) }}</div>
-        <van-image fit="contain" :src="msg.picture?.url" @load="loadSuccess(notScroll)" />
+        <van-image
+          fit="contain"
+          :src="msg.picture?.url"
+          @load="loadSuccess(notScroll)"
+        />
       </div>
     </div>
     <!-- 处方卡片 -->
@@ -152,7 +182,11 @@ const buy = (pre?: Prescription) => {
           <p>开方时间：{{ msg.prescription?.createTime }}</p>
         </div>
         <div class="body">
-          <div class="body-item" v-for="med in msg.prescription?.medicines" :key="med.id">
+          <div
+            class="body-item"
+            v-for="med in msg.prescription?.medicines"
+            :key="med.id"
+          >
             <div class="durg">
               <p>{{ med.name }}{{ med.specs }}</p>
               <p>{{ med.amount }}</p>
@@ -160,11 +194,19 @@ const buy = (pre?: Prescription) => {
             <div class="num">x{{ med.quantity }}</div>
           </div>
         </div>
-        <div class="foot"><span @click="buy(msg.prescription)">购买药品</span></div>
+        <div class="foot">
+          <span @click="buy(msg.prescription)">购买药品</span>
+        </div>
       </div>
     </div>
   </template>
   <!-- 评价卡片，后期实现 -->
+  <div
+    class="msg"
+    v-if="msgType === MsgType.CardEva || msgType === MsgType.CardEvaForm"
+  >
+    <evaluate-card :evaluateDoc="msg.evaluateDoc"></evaluate-card>
+  </div>
 </template>
 
 <style lang="scss" scoped>
