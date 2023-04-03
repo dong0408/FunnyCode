@@ -11,8 +11,11 @@ import type {
   ConsultOrderPreParams,
   ConsultOrderPreData,
   PartiaConsult,
-  ConsultOrderItem
+  ConsultOrderItem,
+  ConsultOrderPage,
+  ConsultOrderParams
 } from '@/types/consult'
+
 import { request } from '@/utils/request'
 
 //获取文章
@@ -56,6 +59,20 @@ export const getConsultOrderPayUrl = (data: {
 export const getConsultOrderDetail = (orderId: string) =>
   request<ConsultOrderItem>('/patient/consult/order/detail', 'GET', { orderId })
 
-  //查看处方
+//查看处方
 
-  export const getPrescriptionPic=(id:string)=>request<{ url: string }>(`/patient/consult/prescription/${id}`)
+export const getPrescriptionPic = (id: string) =>
+  request<{ url: string }>(`/patient/consult/prescription/${id}`)
+
+//提交评价
+export const evaluateConsultOrder = (data: {
+  docId: string
+  orderId: string
+  score: number
+  content: string
+  anonymousFlag: 0 | 1
+}) => request<{ id: string }>('/patient/order/evaluate', 'POST', data)
+
+//问诊记录分页查询
+
+export const getConsultOrderPage=(params:ConsultOrderParams)=>request<ConsultOrderPage>('/patient/consult/order/list', 'GET', params)
