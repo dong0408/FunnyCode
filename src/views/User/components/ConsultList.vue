@@ -24,6 +24,13 @@ const onLoad = async () => {
   }
   loading.value = false
 }
+
+const onDelete = (id: string) => {
+  //从数组中找出元素，删除元素
+  // const index = list.value.find((item) => (item.id = id))
+  // list.value.splice(index, 1)
+  list.value = list.value.filter((item) => item.id !== id)
+}
 </script>
 
 <template>
@@ -34,7 +41,7 @@ const onLoad = async () => {
       finished-text="没有更多了"
       @load="onLoad"
     >
-      <consult-item :item="item" v-for="item in list" :key="item.id" />
+      <consult-item :item="item" v-for="item in list" :key="item.id" @on-delete="onDelete" />
     </van-list>
   </div>
 </template>

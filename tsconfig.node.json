@@ -3,6 +3,12 @@
   "include": ["vite.config.*", "vitest.config.*", "cypress.config.*", "playwright.config.*"],
   "compilerOptions": {
     "composite": true,
-    "types": ["node"]
+    "types": ["node"],
+    // "lib": [
+    //   "ES2018",
+
+    //   "DOM",
+    //   "DOM.Iterable"
+    // ]
   }
 }

@@ -10,15 +10,18 @@ import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores'
 import EvaluateCard from './EvaluateCard.vue'
 import dayjs from 'dayjs'
+import { useShowPrescription } from '@/composable'
+
+import { getConsultFlagText, getIllnessTimeText } from '@/utils/filter'
 defineProps<{ list: Message[] }>()
 
-const getIllnessTimeText = (time?: ConsultTime) => {
-  return timeOptions.find((item) => item.value === time)?.label
-}
+// const getIllnessTimeText = (time?: ConsultTime) => {
+//   return timeOptions.find((item) => item.value === time)?.label
+// }
 
-const getConsultFlagText = (flag?: 0 | 1) => {
-  return flagOptions.find((item) => item.value === flag)?.label
-}
+// const getConsultFlagText = (flag?: 0 | 1) => {
+//   return flagOptions.find((item) => item.value === flag)?.label
+// }
 const onPreviewImage = (pictures?: Image[]) => {
   if (pictures && pictures.length) {
     showImagePreview(pictures.map((item) => item.url))
@@ -37,12 +40,8 @@ const loadSuccess = (notScroll?: boolean) => {
   window.scrollTo(0, document.body.scrollHeight)
 }
 
-const showPrescription = async (id?: string) => {
-  if (id) {
-    const res = await getPrescriptionPic(id)
-    showImagePreview([res.data.url])
-  }
-}
+//查看处方
+const { showPrescription } = useShowPrescription()
 
 //购买药品
 
