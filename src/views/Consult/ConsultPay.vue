@@ -81,18 +81,18 @@ onBeforeRouteLeave(() => {
   //离开路由前的事情
   if (orderId.value) return false
 })
-const pay = async () => {
-  if (paymentMethod.value === undefined) return showToast('请选择支付方式')
-  showLoadingToast({ message: '跳转支付', duration: 0 })
-  if (orderId.value) {
-    const res = await getConsultOrderPayUrl({
-      paymentMethod: paymentMethod.value,
-      orderId: orderId.value,
-      payCallback: 'http://127.0.0.1:5173/room'
-    })
-    location.href = res.data.payUrl
-  }
-}
+// const pay = async () => {
+//   if (paymentMethod.value === undefined) return showToast('请选择支付方式')
+//   showLoadingToast({ message: '跳转支付', duration: 0 })
+//   if (orderId.value) {
+//     const res = await getConsultOrderPayUrl({
+//       paymentMethod: paymentMethod.value,
+//       orderId: orderId.value,
+//       payCallback: 'http://127.0.0.1:5173/room'
+//     })
+//     location.href = res.data.payUrl
+//   }
+// }
 </script>
 
 <template>
@@ -130,7 +130,13 @@ const pay = async () => {
       :loading="loading"
       @click="openSheet"
     />
-    <van-action-sheet
+    <cp-pay-sheet
+      :actual-payment="payInfo.actualPayment"
+      :orderId="orderId"
+      v-model:show="show"
+      :onClose="onClose"
+    ></cp-pay-sheet>
+    <!-- <van-action-sheet
       v-model:show="show"
       title="选择支付方式"
       :closeable="false"
@@ -153,7 +159,7 @@ const pay = async () => {
           <van-button type="primary" round block @click="pay">立即支付</van-button>
         </div>
       </div>
-    </van-action-sheet>
+    </van-action-sheet> -->
   </div>
   <div class="consult-pay-page" v-else>
     <van-skeleton title :row="4"></van-skeleton>

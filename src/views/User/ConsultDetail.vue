@@ -2,11 +2,13 @@
 import { OrderType } from '@/enum'
 import { getConsultOrderDetail } from '@/services/consult'
 import type { ConsultOrderItem } from '@/types/consult'
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { getConsultFlagText, getIllnessTimeText } from '@/utils/filter'
 import { useCancelOrder, useDeleteOrder, useShowPrescription } from '@/composable'
 import { useRouter } from 'vue-router'
+import { useClipboard } from '@vueuse/core'
+import { showToast } from 'vant'
 
 const item = ref<ConsultOrderItem>()
 const route = useRoute()
@@ -25,6 +27,21 @@ const { loading: deleteLoading, deleteConsultOrder } = useDeleteOrder(() => {
 
 //查看处方
 const { showPrescription } = useShowPrescription()
+
+//复制功能
+const { copy, copied, isSupported } = useClipboard()
+const onCopy = () => {
+  if (!isSupported.value) return showToast('不支持，或未授权')
+  copy(item.value?.orderNo as string)
+}
+//复制后提示
+watch(copied, () => {
+  if (copied.value) {
+    showToast('已复制')
+  }
+})
+
+const show = ref(false)
 </script>
 
 <template>
@@ -68,7 +85,7 @@ const { showPrescription } = useShowPrescription()
       <van-cell-group :border="false">
         <van-cell title="订单编号">
           <template #value>
-            <span class="copy">复制</span>
+            <span class="copy" @click="onCopy">复制</span>
             {{ item.orderNo }}
           </template>
         </van-cell>
@@ -91,7 +108,7 @@ const { showPrescription } = useShowPrescription()
       <van-button type="default" round :loading="loading" @click="onCancelOrder(item!)"
         >取消问诊</van-button
       >
-      <van-button type="primary" round>继续支付</van-button>
+      <van-button type="primary" round @click="show = true">继续支付</van-button>
     </div>
     <div class="detail-action van-hairline--top" v-if="item.status === OrderType.ConsultWait">
       <van-button type="default" round :loading="loading" @click="onCancelOrder(item!)"
@@ -100,7 +117,14 @@ const { showPrescription } = useShowPrescription()
       <van-button type="primary" round :to="`/room?orderId=${item.id}`"> 继续沟通 </van-button>
     </div>
     <div class="detail-action van-hairline--top" v-if="item.status === OrderType.ConsultChat">
-      <van-button type="default" round v-if="item.prescriptionId" @click="showPrescription(item?.prescriptionId)"> 查看处方 </van-button>
+      <van-button
+        type="default"
+        round
+        v-if="item.prescriptionId"
+        @click="showPrescription(item?.prescriptionId)"
+      >
+        查看处方
+      </van-button>
       <van-button type="primary" round :to="`/room?orderId=${item.id}`"> 继续沟通 </van-button>
     </div>
     <div class="detail-action van-hairline--top" v-if="item.status === OrderType.ConsultComplete">
@@ -119,6 +143,12 @@ const { showPrescription } = useShowPrescription()
       >
       <van-button type="primary" round to="/">咨询其他医生</van-button>
     </div>
+    <!-- 支付 -->
+    <cp-pay-sheet
+      :actual-payment="item.actualPayment"
+      :order-id="item.id"
+      v-model:show="show"
+    ></cp-pay-sheet>
   </div>
 
   <div class="consult-detail-page" v-else>
