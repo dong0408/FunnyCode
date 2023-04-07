@@ -53,8 +53,9 @@ const buy = (pre?: Prescription) => {
     //无效
     if (pre.status === PrescriptionStatus.Invalid) return showToast('处方失效')
     //未支付，没订单
-    if (pre.status === PrescriptionStatus.NotPayment && !pre.orderId)
-      return router.push('/order/pay?id=' + pre.id)
+    if (pre.status === PrescriptionStatus.NotPayment && !pre.orderId) console.log('57')
+
+    return router.push('/order/pay?id=' + pre.id)
   }
   //未支付，有订单
   router.push(`/order/${pre?.orderId}`)

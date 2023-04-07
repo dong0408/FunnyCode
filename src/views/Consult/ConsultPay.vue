@@ -135,6 +135,7 @@ onBeforeRouteLeave(() => {
       :orderId="orderId"
       v-model:show="show"
       :onClose="onClose"
+      pay-callback="http://127.0.0.1:5173/"
     ></cp-pay-sheet>
     <!-- <van-action-sheet
       v-model:show="show"
