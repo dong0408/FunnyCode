@@ -3,6 +3,9 @@ import { cancelOrder, deleteOrder, followTarget, getPrescriptionPic } from '@/se
 import { ref } from 'vue'
 import { showFailToast, showImagePreview, showSuccessToast } from 'vant'
 import { OrderType } from '@/enum'
+import type { OrderDetail } from '@/types/order'
+import { getMedicalOrderDetail } from '@/services/order'
+import { onMounted } from 'vue'
 export const useFollow = (type: FollowType = 'doc') => {
   //关注逻辑
   const loading = ref(false)
@@ -63,7 +66,7 @@ export const useCancelOrder = () => {
 }
 
 //删除订单
-export const useDeleteOrder = (cb: (id:string) => void) => {
+export const useDeleteOrder = (cb: (id: string) => void) => {
   const loading = ref(false)
   const deleteConsultOrder = async (item: ConsultOrderItem) => {
     loading.value = true
@@ -79,4 +82,19 @@ export const useDeleteOrder = (cb: (id:string) => void) => {
     }
   }
   return { loading, deleteConsultOrder }
+}
+
+export const useOrderDetail = (id: string) => {
+  const order = ref<OrderDetail>()
+  const loading = ref(false)
+  onMounted(async () => {
+    loading.value = true
+    try {
+      const res = await getMedicalOrderDetail(id)
+      order.value = res.data
+    } finally {
+      loading.value = false
+    }
+  })
+  return { loading, order }
 }
