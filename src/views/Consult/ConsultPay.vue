@@ -117,7 +117,7 @@ onBeforeRouteLeave(() => {
         title="患者信息"
         :value="`${patient.name} | ${patient.genderValue} | ${patient.age}`"
       ></van-cell>
-      <van-cell title="病情描述" :label="store.consult.illnessDesc"></van-cell>
+      <!-- <van-cell title="病情描述" :label="store.consult.illnessDesc"></van-cell> -->
     </van-cell-group>
     <div class="pay-schema">
       <van-checkbox v-model="agree">我已同意 <span class="text">支付协议</span></van-checkbox>
@@ -135,7 +135,7 @@ onBeforeRouteLeave(() => {
       :orderId="orderId"
       v-model:show="show"
       :onClose="onClose"
-      pay-callback="http://127.0.0.1:5173/"
+      pay-callback="/room"
     ></cp-pay-sheet>
     <!-- <van-action-sheet
       v-model:show="show"

@@ -1,11 +1,14 @@
 import type { ConsultOrderItem, Doctor, FollowType } from '@/types/consult'
 import { cancelOrder, deleteOrder, followTarget, getPrescriptionPic } from '@/services/consult'
-import { ref } from 'vue'
-import { showFailToast, showImagePreview, showSuccessToast } from 'vant'
+import { ref, type Ref } from 'vue'
+import { showFailToast, showImagePreview, showSuccessToast, type FormInstance } from 'vant'
 import { OrderType } from '@/enum'
 import type { OrderDetail } from '@/types/order'
 import { getMedicalOrderDetail } from '@/services/order'
 import { onMounted } from 'vue'
+import { sendMobileCode } from '@/services/user'
+import { onUnmounted } from 'vue'
+import type { codeType } from '@/types/user'
 export const useFollow = (type: FollowType = 'doc') => {
   //关注逻辑
   const loading = ref(false)
@@ -58,9 +61,10 @@ export const useCancelOrder = () => {
       .catch((err) => {
         showFailToast('取消失败')
       })
-      .finally(() => {
-        loading.value = false
-      })
+    // .finally(() => {
+    //   loading.value = false
+    // })
+    loading.value = false
   }
   return { loading, onCancelOrder }
 }
@@ -97,4 +101,27 @@ export const useOrderDetail = (id: string) => {
     }
   })
   return { loading, order }
+}
+
+//发送短信验证码
+export const useMobileCode = (mobile: Ref<string>, type: codeType) => {
+  const time = ref(0)
+  const form = ref<FormInstance | null>(null)
+  let timeId: number
+  const send = async () => {
+    if (time.value > 0) return
+    await form.value?.validate('mobile')
+    await sendMobileCode(mobile.value, type)
+    showSuccessToast('发送成功')
+    time.value = 60
+    if (timeId) clearInterval(timeId)
+    timeId = setInterval(() => {
+      time.value--
+      if (time.value <= 0) clearInterval(timeId)
+    }, 1000)
+  }
+  onUnmounted(() => {
+    clearInterval(timeId)
+  })
+  return { form, time, send }
 }

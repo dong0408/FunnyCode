@@ -1,6 +1,6 @@
 import { timeOptions, flagOptions } from '@/services/constants'
 // import { ConsultTime } from '@/enum'
-import { ConsultTime } from '@/enum'
+import type { ConsultTime } from '@/enum'
 
 export const getIllnessTimeText = (time?: ConsultTime) => {
   return timeOptions.find((item) => item.value === time)?.label

@@ -58,7 +58,7 @@ const buy = (pre?: Prescription) => {
     return router.push('/order/pay?id=' + pre.id)
   }
   //未支付，有订单
-  router.push(`/order/${pre?.orderId}`)
+  // router.push(`/order/${pre?.orderId}`)
 }
 </script>
 

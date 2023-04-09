@@ -55,20 +55,28 @@
     <div class="login-other">
       <van-divider>第三方登录</van-divider>
       <div class="icon">
-        <img src="@/assets/qq.svg" alt="" />
+        <a
+          @click="store.updateReturnUrl($route.query.returnUrl as string)"
+          :href="`https://graph.qq.com/oauth2.0/authorize?client_id=102015968&response_type=token&scope=all&redirect_uri=${url}`"
+        >
+          <!-- <div id="qq"></div> -->
+          <img src="@/assets/qq.svg" alt="" />
+        </a>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { mobileRules, passwordRules, codeRules } from '@/utils/rules'
 import { showToast, showSuccessToast, type FormInstance } from 'vant'
 import { loginByCode, loginByPassword, sendMobileCode } from '@/services/user'
 import { useUserStore } from '@/stores'
 import { useRoute, useRouter } from 'vue-router'
-
+import { useMobileCode } from '@/composable'
+import axios from 'axios'
+// import QC from ''
 const agree = ref(false)
 const mobile = ref('')
 const password = ref('')
@@ -93,80 +101,37 @@ const login = async () => {
 //短信登录页面切换
 const isPass = ref(true)
 const code = ref('')
-const time = ref(0)
-const form = ref<FormInstance | null>(null)
-let timeId: number
-const send = async () => {
-  if (time.value > 0) return
-  await form.value?.validate('mobile')
-  await sendMobileCode(mobile.value, 'login')
-  showSuccessToast('发送成功')
-  time.value = 60
-  if (timeId) clearInterval(timeId)
-  timeId = setInterval(() => {
-    time.value--
-    if (time.value <= 0) clearInterval(timeId)
-  }, 1000)
-}
-onUnmounted(() => {
-  clearInterval(timeId)
+// const time = ref(0)
+// const form = ref<FormInstance | null>(null)
+// let timeId: number
+// const send = async () => {
+//   if (time.value > 0) return
+//   await form.value?.validate('mobile')
+//   await sendMobileCode(mobile.value, 'login')
+//   showSuccessToast('发送成功')
+//   time.value = 60
+//   if (timeId) clearInterval(timeId)
+//   timeId = setInterval(() => {
+//     time.value--
+//     if (time.value <= 0) clearInterval(timeId)
+//   }, 1000)
+// }
+// onUnmounted(() => {
+//   clearInterval(timeId)
+// })
+const { time, form, send } = useMobileCode(mobile, 'bindMobile')
+const url = encodeURIComponent(import.meta.env.VITE_APP_CALLBACK)
+// onMounted(() => {
+//   QC.Login({
+//     btnId: 'qq'
+//   })
+// })\
+
+axios.get('/patient/message/sys/list').then((res) => {
+  console.log(res, 'mock')
 })
 </script>
 
 <style lang="scss" scoped>
-.login {
-  &-page {
-    padding-top: 46px;
-  }
-  &-head {
-    display: flex;
-    padding: 30px 30px 50px;
-    justify-content: space-between;
-    align-items: flex-end;
-    line-height: 1;
-    h3 {
-      font-weight: normal;
-      font-size: 24px;
-    }
-    a {
-      font-size: 15px;
-    }
-  }
-  &-other {
-    margin-top: 60px;
-    padding: 0 30px;
-    .icon {
-      display: flex;
-      justify-content: center;
-      img {
-        width: 36px;
-        height: 36px;
-        padding: 4px;
-      }
-    }
-  }
-}
-.van-form {
-  padding: 0 14px;
-  .cp-cell {
-    height: 52px;
-    line-height: 24px;
-    padding: 14px 16px;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    .van-checkbox {
-      a {
-        color: var(--cp-primary);
-        padding: 0 5px;
-      }
-    }
-  }
-  .btn-send {
-    color: var(--cp-primary);
-    &.active {
-      color: rgba(22, 194, 163, 0.5);
-    }
-  }
-}
+@import '@/styles/login.scss';
 </style>

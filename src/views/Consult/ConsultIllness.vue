@@ -93,13 +93,13 @@ onMounted(() => {
     </div>
     <!-- 收集信息 -->
     <div class="illness-form">
-      <van-field
+      <!-- <van-field
         type="textarea"
         rows="3"
         placeholder="请详细描述您的病情，病情描述不能为空"
         v-model="form.illnessDesc"
-      >
-      </van-field>
+      > -->
+      <!-- </van-field> -->
       <div class="item">
         <p>本次患病多久了？</p>
         <cp-radio-btn :options="timeOptions" v-model="form.illnessTime" />
