@@ -77,7 +77,7 @@ const show = ref(false)
         />
         <van-cell title="患病时长" :value="getIllnessTimeText(item.illnessTime)" />
         <van-cell title="就诊情况" :value="getConsultFlagText(item.consultFlag)" />
-        <van-cell title="病情描述" :label="item.illnessDesc" />
+        <van-cell title="病情描述" :label="item.illnessDesc " />
       </van-cell-group>
     </div>
     <div class="detail-order">

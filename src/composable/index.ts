@@ -61,10 +61,10 @@ export const useCancelOrder = () => {
       .catch((err) => {
         showFailToast('取消失败')
       })
-    // .finally(() => {
-    //   loading.value = false
-    // })
-    loading.value = false
+    .finally(() => {
+      loading.value = false
+    })
+
   }
   return { loading, onCancelOrder }
 }

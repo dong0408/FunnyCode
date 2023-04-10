@@ -1,7 +1,7 @@
 import type { ConsultTime, ConsultType } from '@/enum'
 
 export type KnowledgeType = 'like' | 'recommend' | 'fatReduction' | 'food'
-import type { Patient } from './user' 
+import type { Patient } from './user'
 
 //文章信息
 
@@ -198,6 +198,7 @@ export type ConsultOrderItem = Consult & {
   pointDeduction: number
   /** 实付款 */
   actualPayment: number
+  illnessDesc: string
 }
 
 //问诊记录查询
